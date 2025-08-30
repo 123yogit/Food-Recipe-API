@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>🍲 Recipe Finder</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: #f8f9fa;
+    }
+    .recipe-card {
+      max-width: 800px;
+      margin: auto;
+    }
+    #rimg {
+      max-height: 300px;
+      object-fit: cover;
+    }
+    .ingredients-list li {
+      list-style: none;
+      padding: 3px 0;
+      border-bottom: 1px solid #eee;
+    }
+  </style>
+</head>
+<body class="p-4">
+  <div class="container text-center">
+    <h2 class="mb-4">🍲 Recipe Finder</h2>
+
+    <!-- Search Section -->
+    <div class="input-group mb-3 w-75 mx-auto">
+      <input type="text" id="food" placeholder="Enter food (e.g. cake)" class="form-control">
+      <button class="btn btn-success" onclick="loadRecipe()">Search</button>
+    </div>
+
+    <!-- Recipe Card -->
+    <div id="recipe" class="card recipe-card shadow-lg p-3 d-none">
+      <h3 id="rname" class="text-primary"></h3>
+      <img id="rimg" class="img-fluid rounded mb-3"/>
+      <p><strong>Category:</strong> <span id="rcategory"></span></p>
+      <p><strong>Area:</strong> <span id="rarea"></span></p>
+
+      <h5>📝 Instructions</h5>
+      <p id="instructions"></p>
+
+      <h5>🥕 Ingredients</h5>
+      <ul id="ingredients" class="ingredients-list text-start"></ul>
+
+      <a id="ryoutube" href="#" target="_blank" class="btn btn-danger mt-3">▶ Watch on YouTube</a>
+    </div>
+  </div>
+
+<script>
+function loadRecipe(){
+  let food = document.getElementById("food").value.trim();
+  if(!food){ alert("Please enter a food name"); return; }
+
+  fetch(`https://www.themealdb.com/api/json/v1/1/search.php?s=${food}`)
+  .then(res => res.json())
+  .then(data => {
+    if(!data.meals){
+      alert("Recipe not found!");
+      return;
+    }
+
+    let meal = data.meals[0];
+
+    // Show recipe card
+    document.getElementById("recipe").classList.remove("d-none");
+
+    // Fill details
+    document.getElementById("rname").innerText = meal.strMeal;
+    document.getElementById("rimg").src = meal.strMealThumb;
+    document.getElementById("rcategory").innerText = meal.strCategory;
+    document.getElementById("rarea").innerText = meal.strArea;
+    document.getElementById("instructions").innerText = meal.strInstructions.substring(0,400)+"...";
+    document.getElementById("ryoutube").href = meal.strYoutube;
+
+    // Ingredients list
+    let ingList = "";
+    for(let i=1; i<=20; i++){
+      let ingredient = meal[`strIngredient${i}`];
+      let measure = meal[`strMeasure${i}`];
+      if(ingredient && ingredient.trim() !== ""){
+        ingList += `<li>${ingredient} - ${measure}</li>`;
+      }
+    }
+    document.getElementById("ingredients").innerHTML = ingList;
+
+  })
+  .catch(()=> alert("Error fetching recipe!"));
+}
+</script>
+</body>
+</html>
